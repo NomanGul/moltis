@@ -7,6 +7,9 @@ pub mod genai_provider;
 #[cfg(feature = "provider-async-openai")]
 pub mod async_openai_provider;
 
+#[cfg(feature = "provider-openai-codex")]
+pub mod openai_codex;
+
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -62,6 +65,11 @@ impl ProviderRegistry {
         #[cfg(feature = "provider-async-openai")]
         {
             reg.register_async_openai_providers(config);
+        }
+
+        #[cfg(feature = "provider-openai-codex")]
+        {
+            reg.register_openai_codex_providers(config);
         }
 
         reg.register_builtin_providers(config);
@@ -201,6 +209,36 @@ impl ProviderRegistry {
                 id: model_id.into(),
                 provider: "async-openai".into(),
                 display_name: "GPT-4o (async-openai)".into(),
+            },
+            provider,
+        );
+    }
+
+    #[cfg(feature = "provider-openai-codex")]
+    fn register_openai_codex_providers(&mut self, config: &ProvidersConfig) {
+        if !config.is_enabled("openai-codex") {
+            return;
+        }
+
+        if !openai_codex::has_stored_tokens() {
+            return;
+        }
+
+        let model_id = config
+            .get("openai-codex")
+            .and_then(|e| e.model.as_deref())
+            .unwrap_or("gpt-5.2");
+
+        if self.providers.contains_key(model_id) {
+            return;
+        }
+
+        let provider = Arc::new(openai_codex::OpenAiCodexProvider::new(model_id.into()));
+        self.register(
+            ModelInfo {
+                id: model_id.into(),
+                provider: "openai-codex".into(),
+                display_name: "GPT-5.2 (Codex/OAuth)".into(),
             },
             provider,
         );

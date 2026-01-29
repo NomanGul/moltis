@@ -1,3 +1,5 @@
+mod auth_commands;
+
 use clap::{Parser, Subcommand};
 use tracing::info;
 use tracing_subscriber::{
@@ -63,6 +65,11 @@ enum Commands {
     Onboard,
     /// Config validation and migration.
     Doctor,
+    /// Authentication management for OAuth providers.
+    Auth {
+        #[command(subcommand)]
+        action: auth_commands::AuthAction,
+    },
 }
 
 #[derive(Subcommand)]
@@ -121,6 +128,7 @@ async fn main() -> anyhow::Result<()> {
             Ok(())
         }
         Commands::Onboard => moltis_onboarding::wizard::run_onboarding().await,
+        Commands::Auth { action } => auth_commands::handle_auth(action).await,
         _ => {
             eprintln!("command not yet implemented");
             Ok(())

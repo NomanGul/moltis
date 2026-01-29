@@ -7,6 +7,7 @@ edition.workspace = true
 default = ["provider-genai", "provider-async-openai"]
 provider-genai = ["dep:genai"]
 provider-async-openai = ["dep:async-openai"]
+provider-openai-codex = ["dep:moltis-oauth", "dep:base64"]
 
 [dependencies]
 moltis-common = { workspace = true }
@@ -26,3 +27,5 @@ async-stream = "0.3"
 # Optional LLM provider crates
 genai = { workspace = true, optional = true }
 async-openai = { workspace = true, optional = true }
+moltis-oauth = { workspace = true, optional = true }
+base64 = { workspace = true, optional = true }
