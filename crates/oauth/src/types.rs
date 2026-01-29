@@ -1,13 +1,17 @@
 use serde::{Deserialize, Serialize};
 
 /// OAuth 2.0 provider configuration.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OAuthConfig {
     pub client_id: String,
     pub auth_url: String,
     pub token_url: String,
     pub redirect_uri: String,
+    #[serde(default)]
     pub scopes: Vec<String>,
+    /// Extra query parameters to include in the authorization URL.
+    #[serde(default)]
+    pub extra_auth_params: Vec<(String, String)>,
 }
 
 /// Stored OAuth tokens.

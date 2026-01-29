@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Subcommand;
-use moltis_oauth::{CallbackServer, OAuthConfig, OAuthFlow, TokenStore};
+use moltis_oauth::{CallbackServer, OAuthFlow, TokenStore, callback_port, load_oauth_config};
 
 #[derive(Subcommand)]
 pub enum AuthAction {
@@ -28,21 +28,10 @@ pub async fn handle_auth(action: AuthAction) -> Result<()> {
     }
 }
 
-fn oauth_config_for(provider: &str) -> Result<OAuthConfig> {
-    match provider {
-        "openai-codex" => Ok(OAuthConfig {
-            client_id: "pdlLIX2Y72MIl2rhLhTE9VV9bN905kBh".to_string(),
-            auth_url: "https://auth.openai.com/oauth/authorize".to_string(),
-            token_url: "https://auth.openai.com/oauth/token".to_string(),
-            redirect_uri: "http://127.0.0.1:1455/auth/callback".to_string(),
-            scopes: vec![],
-        }),
-        _ => anyhow::bail!("unknown provider: {provider}"),
-    }
-}
-
 async fn login(provider: &str) -> Result<()> {
-    let config = oauth_config_for(provider)?;
+    let config = load_oauth_config(provider)
+        .ok_or_else(|| anyhow::anyhow!("unknown OAuth provider: {provider}"))?;
+    let port = callback_port(&config);
     let flow = OAuthFlow::new(config);
     let req = flow.start();
 
@@ -51,8 +40,8 @@ async fn login(provider: &str) -> Result<()> {
         println!("Could not open browser. Please visit:\n{}", req.url);
     }
 
-    println!("Waiting for callback on http://127.0.0.1:1455/auth/callback ...");
-    let code = CallbackServer::wait_for_code(1455, req.state).await?;
+    println!("Waiting for callback on http://127.0.0.1:{port}/auth/callback ...");
+    let code = CallbackServer::wait_for_code(port, req.state).await?;
 
     println!("Exchanging code for tokens...");
     let tokens = flow.exchange(&code, &req.pkce.verifier).await?;

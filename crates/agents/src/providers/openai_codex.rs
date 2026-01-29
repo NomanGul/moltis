@@ -3,7 +3,7 @@ use std::pin::Pin;
 use async_trait::async_trait;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use futures::StreamExt;
-use moltis_oauth::{OAuthConfig, OAuthFlow, TokenStore};
+use moltis_oauth::{OAuthFlow, TokenStore, load_oauth_config};
 use tokio_stream::Stream;
 use tracing::debug;
 
@@ -14,7 +14,6 @@ pub struct OpenAiCodexProvider {
     base_url: String,
     client: reqwest::Client,
     token_store: TokenStore,
-    oauth_config: OAuthConfig,
 }
 
 impl OpenAiCodexProvider {
@@ -24,7 +23,6 @@ impl OpenAiCodexProvider {
             base_url: "https://chatgpt.com/backend-api".to_string(),
             client: reqwest::Client::new(),
             token_store: TokenStore::new(),
-            oauth_config: openai_codex_oauth_config(),
         }
     }
 
@@ -45,7 +43,9 @@ impl OpenAiCodexProvider {
                 if let Some(ref refresh_token) = tokens.refresh_token {
                     debug!("refreshing openai-codex token");
                     let rt = tokio::runtime::Handle::current();
-                    let flow = OAuthFlow::new(self.oauth_config.clone());
+                    let oauth_config = load_oauth_config("openai-codex")
+                        .ok_or_else(|| anyhow::anyhow!("missing oauth config for openai-codex"))?;
+                    let flow = OAuthFlow::new(oauth_config);
                     let refresh = refresh_token.clone();
                     let new_tokens = std::thread::scope(|_| {
                         rt.block_on(flow.refresh(&refresh))
@@ -101,16 +101,6 @@ impl OpenAiCodexProvider {
                 }
             })
             .collect()
-    }
-}
-
-pub fn openai_codex_oauth_config() -> OAuthConfig {
-    OAuthConfig {
-        client_id: "pdlLIX2Y72MIl2rhLhTE9VV9bN905kBh".to_string(),
-        auth_url: "https://auth.openai.com/oauth/authorize".to_string(),
-        token_url: "https://auth.openai.com/oauth/token".to_string(),
-        redirect_uri: "http://127.0.0.1:1455/auth/callback".to_string(),
-        scopes: vec![],
     }
 }
 

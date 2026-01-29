@@ -44,6 +44,13 @@ impl OAuthFlow {
                 .append_pair("scope", &self.config.scopes.join(" "));
         }
 
+        for (key, value) in &self.config.extra_auth_params {
+            url.query_pairs_mut().append_pair(key, value);
+        }
+
+        // Always include originator
+        url.query_pairs_mut().append_pair("originator", "pi");
+
         AuthorizationRequest {
             url: url.to_string(),
             pkce,

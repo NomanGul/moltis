@@ -1,6 +1,5 @@
 /// Config schema types (agents, channels, tools, session, gateway, plugins).
-/// Corresponds to src/config/types.ts and zod-schema.*.ts in the TS codebase.
-
+/// Corresponds to `src/config/types.ts` and `zod-schema.*.ts` in the TS codebase.
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
@@ -10,11 +9,87 @@ use serde::{Deserialize, Serialize};
 #[serde(default)]
 pub struct MoltisConfig {
     pub providers: ProvidersConfig,
-    // Future sections:
-    // pub agents: AgentsConfig,
-    // pub channels: ChannelsConfig,
-    // pub gateway: GatewayConfig,
-    // pub plugins: PluginsConfig,
+    pub tools: ToolsConfig,
+}
+
+/// Tools configuration (exec, sandbox, policy).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ToolsConfig {
+    pub exec: ExecConfig,
+    pub policy: ToolPolicyConfig,
+}
+
+/// Exec tool configuration.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ExecConfig {
+    pub default_timeout_secs: u64,
+    pub max_output_bytes: usize,
+    pub approval_mode: String,
+    pub security_level: String,
+    pub allowlist: Vec<String>,
+    pub sandbox: SandboxConfig,
+}
+
+impl Default for ExecConfig {
+    fn default() -> Self {
+        Self {
+            default_timeout_secs: 30,
+            max_output_bytes: 200 * 1024,
+            approval_mode: "on-miss".into(),
+            security_level: "allowlist".into(),
+            allowlist: Vec::new(),
+            sandbox: SandboxConfig::default(),
+        }
+    }
+}
+
+/// Sandbox configuration.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SandboxConfig {
+    pub mode: String,
+    pub scope: String,
+    pub workspace_mount: String,
+    pub image: Option<String>,
+    pub container_prefix: Option<String>,
+    pub no_network: bool,
+}
+
+impl Default for SandboxConfig {
+    fn default() -> Self {
+        Self {
+            mode: "off".into(),
+            scope: "session".into(),
+            workspace_mount: "ro".into(),
+            image: None,
+            container_prefix: None,
+            no_network: true,
+        }
+    }
+}
+
+/// Tool policy configuration (allow/deny lists).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ToolPolicyConfig {
+    pub allow: Vec<String>,
+    pub deny: Vec<String>,
+    pub profile: Option<String>,
+}
+
+/// OAuth provider configuration (e.g. openai-codex).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OAuthProviderConfig {
+    pub client_id: String,
+    pub auth_url: String,
+    pub token_url: String,
+    pub redirect_uri: String,
+    #[serde(default)]
+    pub scopes: Vec<String>,
+    #[serde(default)]
+    pub callback_port: u16,
 }
 
 /// LLM provider configuration.

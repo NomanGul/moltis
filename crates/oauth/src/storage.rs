@@ -20,6 +20,11 @@ impl TokenStore {
         Self { path }
     }
 
+    /// Create a token store at a specific path (useful for testing).
+    pub fn with_path(path: PathBuf) -> Self {
+        Self { path }
+    }
+
     pub fn load(&self, provider: &str) -> Option<OAuthTokens> {
         let data = std::fs::read_to_string(&self.path).ok()?;
         let map: HashMap<String, OAuthTokens> = serde_json::from_str(&data).ok()?;
