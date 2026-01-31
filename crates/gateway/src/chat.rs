@@ -254,6 +254,7 @@ impl ChatService for LiveChatService {
         );
 
         let provider_name = provider.name().to_string();
+        let model_id = provider.id().to_string();
         let session_store = Arc::clone(&self.session_store);
         let session_metadata = Arc::clone(&self.session_metadata);
         let session_key_clone = session_key.clone();
@@ -289,7 +290,7 @@ impl ChatService for LiveChatService {
             // Persist assistant response.
             if let Some(response_text) = assistant_text {
                 let assistant_msg =
-                    serde_json::json!({"role": "assistant", "content": response_text});
+                    serde_json::json!({"role": "assistant", "content": response_text, "model": model_id, "provider": provider_name});
                 if let Err(e) = session_store
                     .append(&session_key_clone, &assistant_msg)
                     .await

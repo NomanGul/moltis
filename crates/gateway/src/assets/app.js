@@ -1223,7 +1223,14 @@
           if (msg.role === "user") {
             msgEls.push(chatAddMsg("user", renderMarkdown(msg.content || ""), true));
           } else if (msg.role === "assistant") {
-            msgEls.push(chatAddMsg("assistant", renderMarkdown(msg.content || ""), true));
+            var el = chatAddMsg("assistant", renderMarkdown(msg.content || ""), true);
+            if (el && msg.model) {
+              var ft = document.createElement("div");
+              ft.className = "msg-model-footer";
+              ft.textContent = msg.provider ? msg.provider + " / " + msg.model : msg.model;
+              el.appendChild(ft);
+            }
+            msgEls.push(el);
           } else {
             msgEls.push(null);
           }

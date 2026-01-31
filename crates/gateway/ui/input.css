@@ -802,6 +802,14 @@
     vertical-align: middle;
   }
 
+  /* Model footer (shown below assistant messages) */
+  .msg-model-footer {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 4px;
+    text-align: right;
+  }
+
   /* Methods panel */
   .methods-result {
     background: var(--bg);
