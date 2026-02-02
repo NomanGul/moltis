@@ -24,8 +24,8 @@ multiple LLM providers and communication channels, inspired by
 - **TLS support** — automatic self-signed certificate generation
 - **Observability** — OpenTelemetry tracing with OTLP export
 - **MCP (Model Context Protocol) support** — connect to MCP tool servers over
-  stdio with trait-based transport and client abstractions for future SDK
-  swapability
+  stdio or HTTP/SSE (remote servers), with health polling, automatic restart
+  on crash (exponential backoff), and in-UI server config editing
 - **Authentication** — password and passkey (WebAuthn) authentication with
   session cookies, API key support, and a first-run setup code flow
 - **Onboarding wizard** — guided setup for agent identity (name, emoji,

@@ -175,6 +175,30 @@ All of those are fragile. The gon blob is the single injection point.
 When data changes at runtime, call `gon.refresh()` instead of manually
 updating individual fields — it keeps everything consistent.
 
+### Event Bus (WebSocket events in JS)
+
+Server-side broadcasts reach the UI via WebSocket frames. The JS event bus
+lives in `events.js`:
+
+```js
+import { onEvent } from "./events.js";
+
+// Subscribe to a named event. Returns an unsubscribe function.
+var off = onEvent("mcp.status", (payload) => {
+  // payload is the deserialized JSON from the broadcast
+});
+
+// In a Preact useEffect, return the unsubscribe for cleanup:
+useEffect(() => {
+  var off = onEvent("some.event", handler);
+  return off;
+}, []);
+```
+
+The WebSocket reader in `websocket.js` dispatches incoming event frames to
+all registered listeners via `eventListeners[frame.event]`. Do **not** use
+`window.addEventListener` / `CustomEvent` for server events — use this bus.
+
 ## Authentication Architecture
 
 The gateway supports password and passkey (WebAuthn) authentication, managed
