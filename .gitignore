@@ -3,10 +3,10 @@
 memory
 prompts
 .envrc
-.env
-.env.*
 .DS_Store
 .playwright-mcp/
 features/
 .moltis/
 docs/book/
+config.bat
+node_modules
